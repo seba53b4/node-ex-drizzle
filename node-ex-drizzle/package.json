@@ -1,0 +1,33 @@
+{
+  "name": "ex-drizzle",
+  "version": "1.0.0",
+  "description": "Node.js example using Drizzle ORM with PostgreSQL",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "concurrently \"nodemon server.js\" \"npm run migrate:watch\"",
+    "migrate": "drizzle-kit push",
+    "migrate:watch": "drizzle-kit generate && drizzle-kit push"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.2",
+    "drizzle-orm": "^0.44.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.4",
+    "nodemon": "^3.1.10"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

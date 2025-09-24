@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  postgres-keycloak:
+    image: postgres:16
+    container_name: postgres-keycloak
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=keycloak
+    ports:
+      - "25433:5432"
+    volumes:
+      - pgdata-keycloak:/var/lib/postgresql/data
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.0
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres-keycloak:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=keycloak
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-keycloak
+    command: start-dev
+
+  postgres-app:
+    image: postgres:16
+    container_name: postgres-app
+    environment:
+      - POSTGRES_DB=node_ex_drizzle
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=appuser
+    ports:
+      - "25432:5432"
+    volumes:
+      - pgdata-app:/var/lib/postgresql/data
+
+volumes:
+  pgdata-keycloak:
+  pgdata-app:

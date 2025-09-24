@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>JWT Login Test</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h2>Login</h2>
+      <form @submit.prevent="login">
+        <input v-model="email" placeholder="Email" />
+        <input v-model="password" type="password" placeholder="Password" />
+        <button type="submit">Login</button>
+      </form>
+
+      <div v-if="accessToken">
+        <h3>Access Token</h3>
+        <textarea readonly rows="6" style="width: 100%">
+{{ accessToken }}</textarea
+        >
+
+        <div style="margin-top: 10px">
+          <button @click="callProtected">Get Users (Protected)</button>
+          <button @click="refreshToken">Refresh Token</button>
+          <button @click="logout">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      createApp({
+        setup() {
+          const API_URL = "http://localhost:4000"; // ⚡ tu backend Node
+          const email = ref("");
+          const password = ref("");
+          const accessToken = ref(localStorage.getItem("accessToken") || "");
+
+          // Login -> guarda accessToken en memoria + cookie HttpOnly via backend
+          async function login() {
+            const res = await fetch(`${API_URL}/auth/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include", // importante para que viaje la cookie
+              body: JSON.stringify({
+                email: email.value,
+                password: password.value,
+              }),
+            });
+
+            if (!res.ok) {
+              alert("Login failed");
+              return;
+            }
+
+            const data = await res.json();
+            localStorage.setItem("accessToken", data.accessToken);
+            accessToken.value = data.accessToken;
+          }
+
+          // Llamar a endpoint protegido
+          async function callProtected() {
+            const res = await fetch(`${API_URL}/users`, {
+              headers: { Authorization: `Bearer ${accessToken.value}` },
+              credentials: "include",
+            });
+
+            if (!res.ok) {
+              alert("Unauthorized");
+              return;
+            }
+
+            const data = await res.json();
+            alert(JSON.stringify(data, null, 2));
+          }
+
+          // Refrescar token usando la cookie HttpOnly
+          async function refreshToken() {
+            const res = await fetch(`${API_URL}/auth/refresh`, {
+              method: "POST",
+              credentials: "include",
+            });
+
+            if (!res.ok) {
+              alert("Refresh failed");
+              return;
+            }
+
+            const data = await res.json();
+            localStorage.setItem("accessToken", data.accessToken);
+            accessToken.value = data.accessToken;
+          }
+
+          // Logout -> borra cookie y accessToken
+          async function logout() {
+            await fetch(`${API_URL}/auth/logout`, {
+              method: "POST",
+              credentials: "include",
+            });
+
+            localStorage.removeItem("accessToken");
+            accessToken.value = "";
+          }
+
+          return {
+            email,
+            password,
+            accessToken,
+            login,
+            callProtected,
+            refreshToken,
+            logout,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "schema": "./db/schema.js",
+  "out": "./drizzle",
+  "dialect": "postgresql",
+  "dbCredentials": {
+    "host": "localhost",
+    "port": 25432,
+    "user": "appuser",
+    "password": "appuser",
+    "database": "node_ex_drizzle",
+    "ssl": false
+  }
+}
